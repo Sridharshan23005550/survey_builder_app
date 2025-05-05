@@ -317,8 +317,9 @@ button.remove-btn {
 }
 
 ## OUTPUT
-![alt text](<img/Screenshot 2025-05-05 114116.png>)
-![alt text](<img/Screenshot 2025-05-05 114136.png>)
-![alt text](<img/Screenshot 2025-05-05 114153.png>)
+![Screenshot 2025-05-05 114116](https://github.com/user-attachments/assets/684c7fb0-30ca-4bbd-a327-24fa6a6d09e6)
+![Screenshot 2025-05-05 114136](https://github.com/user-attachments/assets/4aa5cc4a-c594-4077-a711-50fd12daf34d)
+![Screenshot 2025-05-05 114153](https://github.com/user-attachments/assets/73797081-4479-4b00-a9cf-2bc6db5c52fd)
+
 ## RESULT
 The program for survey building app is created successfully.
