@@ -1,83 +1,106 @@
-# survey_builder_app
-## Attendance Activity
-## Date: 5-05-2025
+,# React Survey App
 
-## AIM
-To create a Portfolio using HTML and CSS.
+A simple React application with two modes:
 
-## ALGORITHM
-### STEP 1
-Initialize State Variables
-### STEP 2
-Implement Mode Toggle UI
+- **Build Mode**: Create a custom survey.
+- **Fill Mode**: Fill out the survey and view a summary of responses.
 
-### STEP 3
-Build Mode UI Layout
+Built using only `useState`, `useEffect`, and conditional rendering. No external routing or libraries.
 
-### STEP 4
-Add Question Functionality
+---
 
+## Features
 
-### STEP 5
-Edit and Remove Questions
+###  Build Mode
+- Add questions with:
+  - Text input
+  - Radio buttons
+  - Checkboxes
+- Specify options (comma-separated) for radio and checkbox types
+- Remove questions
 
-### STEP 6
-Switch to Fill Mode
+### 📝 Fill Mode
+- Render form dynamically based on questions
+- Input fields match the type of question
+- On submit, shows summary of answers
 
-### STEP 7
-Capture User Input
+---
 
-### STEP 8
-Handle Form Submission
+## 🛠️ Tech Stack
 
-### STEP 9
-Display Summary of Responses
+- React (with Hooks)
+- Vite (optional)
+- No external routing libraries
+- Styling via CSS
+- Axios (optional, not used here)
 
-### STEP 10
-Finalize and Test
+---
 
-## PROGRAM
-### App.js
+## 📂 File Structure
+
+src/
+├── App.jsx
+├── main.jsx
+├── index.css
+public/
+├── index.html
+
+yaml
+Copy
+Edit
+
+---
 ```
+🔹 main.jsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+🔹 App.jsx
+jsx
+Copy
+Edit
 import React, { useState } from "react";
-import './App.css';
-export default function SurveyBuilderApp() {
+
+function App() {
   const [mode, setMode] = useState("build");
   const [questions, setQuestions] = useState([]);
-  const [questionText, setQuestionText] = useState("");
-  const [questionType, setQuestionType] = useState("text");
-  const [optionsText, setOptionsText] = useState("");
+  const [newQuestion, setNewQuestion] = useState({ text: "", type: "text", options: "" });
   const [responses, setResponses] = useState({});
   const [submitted, setSubmitted] = useState(false);
 
   const addQuestion = () => {
-    const newQuestion = {
+    if (!newQuestion.text.trim()) return;
+    const question = {
       id: Date.now(),
-      text: questionText,
-      type: questionType,
-      options: questionType !== "text" ? optionsText.split(",").map(opt => opt.trim()) : [],
+      text: newQuestion.text,
+      type: newQuestion.type,
+      options: newQuestion.type !== "text" ? newQuestion.options.split(",").map(opt => opt.trim()) : [],
     };
-    setQuestions([...questions, newQuestion]);
-    setQuestionText("");
-    setQuestionType("text");
-    setOptionsText("");
+    setQuestions([...questions, question]);
+    setNewQuestion({ text: "", type: "text", options: "" });
   };
 
   const removeQuestion = (id) => {
     setQuestions(questions.filter(q => q.id !== id));
   };
 
-  const handleResponseChange = (id, value) => {
+  const handleChange = (id, value) => {
     setResponses(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleCheckboxChange = (id, value) => {
+  const handleCheckboxChange = (id, option) => {
     const current = responses[id] || [];
-    if (current.includes(value)) {
-      setResponses({ ...responses, [id]: current.filter(v => v !== value) });
-    } else {
-      setResponses({ ...responses, [id]: [...current, value] });
-    }
+    const updated = current.includes(option)
+      ? current.filter(o => o !== option)
+      : [...current, option];
+    handleChange(id, updated);
   };
 
   const handleSubmit = (e) => {
@@ -86,74 +109,43 @@ export default function SurveyBuilderApp() {
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <div className="mb-6">
-        <button
-          className="mr-4 px-4 py-2 bg-blue-500 text-white rounded"
-          onClick={() => setMode("build")}
-        >
-          Build Mode
-        </button>
-        <button
-          className="px-4 py-2 bg-green-500 text-white rounded"
-          onClick={() => setMode("fill")}
-        >
-          Fill Mode
-        </button>
+    <div className="container">
+      <h1>Survey App</h1>
+      <div className="mode-toggle">
+        <button onClick={() => setMode("build")}>Build Mode</button>
+        <button onClick={() => setMode("fill")}>Fill Mode</button>
       </div>
 
       {mode === "build" && (
-        <div>
-          <h2 className="text-xl font-bold mb-4">Create Survey</h2>
+        <div className="build-mode">
+          <h2>Create a Question</h2>
           <input
-            className="border p-2 w-full mb-2"
             placeholder="Question text"
-            value={questionText}
-            onChange={e => setQuestionText(e.target.value)}
+            value={newQuestion.text}
+            onChange={(e) => setNewQuestion({ ...newQuestion, text: e.target.value })}
           />
           <select
-            className="border p-2 w-full mb-2"
-            value={questionType}
-            onChange={e => setQuestionType(e.target.value)}
+            value={newQuestion.type}
+            onChange={(e) => setNewQuestion({ ...newQuestion, type: e.target.value })}
           >
             <option value="text">Text</option>
             <option value="radio">Radio</option>
             <option value="checkbox">Checkbox</option>
           </select>
-          {questionType !== "text" && (
+          {(newQuestion.type === "radio" || newQuestion.type === "checkbox") && (
             <input
-              className="border p-2 w-full mb-2"
-              placeholder="Comma-separated options"
-              value={optionsText}
-              onChange={e => setOptionsText(e.target.value)}
+              placeholder="Options (comma separated)"
+              value={newQuestion.options}
+              onChange={(e) => setNewQuestion({ ...newQuestion, options: e.target.value })}
             />
           )}
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded mb-4"
-            onClick={addQuestion}
-          >
-            Add Question
-          </button>
+          <button onClick={addQuestion}>Add Question</button>
 
-          <ul className="space-y-2">
-            {questions.map(q => (
-              <li key={q.id} className="border p-4 rounded">
-                <div className="flex justify-between">
-                  <span>{q.text} ({q.type})</span>
-                  <button
-                    className="text-red-500"
-                    onClick={() => removeQuestion(q.id)}
-                  >
-                    Remove
-                  </button>
-                </div>
-                {q.options.length > 0 && (
-                  <ul className="text-sm text-gray-600 mt-1">
-                    {q.options.map((opt, idx) => (
-                      <li key={idx}>- {opt}</li>
-                    ))}
-                  </ul>
-                )}
+          <ul className="question-list">
+            {questions.map((q) => (
+              <li key={q.id}>
+                <strong>{q.text}</strong> ({q.type})
+                <button onClick={() => removeQuestion(q.id)}>Remove</button>
               </li>
             ))}
           </ul>
@@ -161,61 +153,63 @@ export default function SurveyBuilderApp() {
       )}
 
       {mode === "fill" && (
-        <div>
-          <h2 className="text-xl font-bold mb-4">Fill Survey</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {questions.map(q => (
-              <div key={q.id}>
-                <label className="font-semibold block mb-1">{q.text}</label>
-                {q.type === "text" && (
-                  <input
-                    className="border p-2 w-full"
-                    type="text"
-                    value={responses[q.id] || ""}
-                    onChange={e => handleResponseChange(q.id, e.target.value)}
-                  />
-                )}
-                {q.type === "radio" && q.options.map((opt, idx) => (
-                  <label key={idx} className="block">
+        <div className="fill-mode">
+          <h2>Fill Out the Survey</h2>
+          {!submitted ? (
+            <form onSubmit={handleSubmit}>
+              {questions.map((q) => (
+                <div key={q.id} className="question">
+                  <label>{q.text}</label>
+                  {q.type === "text" && (
                     <input
-                      type="radio"
-                      name={`radio-${q.id}`}
-                      value={opt}
-                      checked={responses[q.id] === opt}
-                      onChange={() => handleResponseChange(q.id, opt)}
-                    /> {opt}
-                  </label>
-                ))}
-                {q.type === "checkbox" && q.options.map((opt, idx) => (
-                  <label key={idx} className="block">
-                    <input
-                      type="checkbox"
-                      value={opt}
-                      checked={(responses[q.id] || []).includes(opt)}
-                      onChange={() => handleCheckboxChange(q.id, opt)}
-                    /> {opt}
-                  </label>
-                ))}
-              </div>
-            ))}
-            <button
-              type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded"
-            >
-              Submit Survey
-            </button>
-          </form>
-
-          {submitted && (
-            <div className="mt-6">
-              <h3 className="text-lg font-bold mb-2">Survey Responses:</h3>
-              <ul className="space-y-2">
-                {questions.map(q => (
+                      type="text"
+                      value={responses[q.id] || ""}
+                      onChange={(e) => handleChange(q.id, e.target.value)}
+                    />
+                  )}
+                  {q.type === "radio" &&
+                    q.options.map((opt, i) => (
+                      <label key={i}>
+                        <input
+                          type="radio"
+                          name={`radio-${q.id}`}
+                          value={opt}
+                          checked={responses[q.id] === opt}
+                          onChange={() => handleChange(q.id, opt)}
+                        />
+                        {opt}
+                      </label>
+                    ))}
+                  {q.type === "checkbox" &&
+                    q.options.map((opt, i) => (
+                      <label key={i}>
+                        <input
+                          type="checkbox"
+                          value={opt}
+                          checked={(responses[q.id] || []).includes(opt)}
+                          onChange={() => handleCheckboxChange(q.id, opt)}
+                        />
+                        {opt}
+                      </label>
+                    ))}
+                </div>
+              ))}
+              <button type="submit">Submit</button>
+            </form>
+          ) : (
+            <div className="summary">
+              <h3>Summary of Responses</h3>
+              <ul>
+                {questions.map((q) => (
                   <li key={q.id}>
-                    <strong>{q.text}:</strong> {Array.isArray(responses[q.id]) ? responses[q.id].join(", ") : responses[q.id] || "(no response)"}
+                    <strong>{q.text}</strong>:{" "}
+                    {Array.isArray(responses[q.id])
+                      ? responses[q.id].join(", ")
+                      : responses[q.id]}
                   </li>
                 ))}
               </ul>
+              <button onClick={() => setSubmitted(false)}>Edit Answers</button>
             </div>
           )}
         </div>
@@ -224,102 +218,59 @@ export default function SurveyBuilderApp() {
   );
 }
 
-```
-### App.css
+export default App;
 
+```
+ index.css
+
+```
 body {
-  font-family: sans-serif;
-  background-color: #f8f9fa;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
   margin: 0;
-  padding: 20px;
+  padding: 0;
 }
 
 .container {
-  max-width: 720px;
-  margin: 0 auto;
+  max-width: 800px;
+  margin: auto;
   padding: 20px;
   background: white;
+  margin-top: 40px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-h2 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-input[type="text"],
-select,
-textarea {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-button {
+.mode-toggle button {
+  margin-right: 10px;
+  padding: 10px 20px;
+  font-weight: bold;
   cursor: pointer;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 16px;
-  font-weight: bold;
 }
 
-button:hover {
-  opacity: 0.9;
+.build-mode input,
+.fill-mode input,
+select {
+  display: block;
+  margin: 10px 0;
+  padding: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-button:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(100, 149, 237, 0.3);
+.question-list li {
+  margin-top: 10px;
 }
 
-button.build-btn {
-  background-color: #007bff;
-  color: white;
-  margin-right: 1rem;
+.question {
+  margin-bottom: 20px;
 }
 
-button.fill-btn {
-  background-color: #28a745;
-  color: white;
+.summary ul {
+  list-style-type: none;
+  padding: 0;
 }
+```
+### OUTPUT
 
-button.add-btn {
-  background-color: #0056b3;
-  color: white;
-  margin-bottom: 1rem;
-}
-
-button.remove-btn {
-  color: #dc3545;
-  background: none;
-  border: none;
-  font-weight: bold;
-  float: right;
-  margin-left: auto;
-}
-
-.question-item {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 0.75rem;
-  background-color: #fff;
-}
-
-.response-summary {
-  background-color: #f1f3f5;
-  padding: 12px;
-  border-radius: 6px;
-  margin-top: 1rem;
-}
-
-## OUTPUT
-![Screenshot 2025-05-05 114116](https://github.com/user-attachments/assets/684c7fb0-30ca-4bbd-a327-24fa6a6d09e6)
-![Screenshot 2025-05-05 114136](https://github.com/user-attachments/assets/4aa5cc4a-c594-4077-a711-50fd12daf34d)
-![Screenshot 2025-05-05 114153](https://github.com/user-attachments/assets/73797081-4479-4b00-a9cf-2bc6db5c52fd)
-
-## RESULT
-The program for survey building app is created successfully.
+![Untitled design (1)](https://github.com/user-attachments/assets/acfadf62-7202-4f62-945c-bb43204b6c6f)
